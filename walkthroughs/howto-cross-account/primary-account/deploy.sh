@@ -90,7 +90,7 @@ deploy_stacks() {
     deploy_mesh
     deploy_app
     enable_org_share
-    share_resources
+ #   share_resources
 }
 
 delete_stacks() {
