@@ -34,29 +34,28 @@ deploy_VPCPeeringAuthorizerRole() {
 
 deploy_VPCPeering() {
 
-    echo "Setting AWS_PROFILE=${AWS_PRIMARY_PROFILE}"
-    export AWS_PROFILE=${AWS_PRIMARY_PROFILE}
-
-if [ -z $AWS_PROFILE ]; then
-    echo "AWS_PROFILE environment variable is not set."
-    exit 1
-fi
-
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
-"${DIR}/primary-account"
-PRIMARY_ACCOUNT_DIR="${DIR}/primary-account"
+#DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+#PRIMARY_ACCOUNT_DIR=$("cd ../primary-account && pwd")
 
 PeerRoleName=$(aws cloudformation describe-stacks \
         --profile ${AWS_SECONDARY_PROFILE} \
         --stack-name="${PROJECT_NAME}-VPCPeeringAuthorizerRole" \
-        --query="Stacks[0].Outputs[?OutputKey=='VPC'].OutputValue" \
+        --query="Stacks[0].Outputs[?OutputKey=='RoleName'].OutputValue" \
         --output=text)
+
+    echo "Setting AWS_PROFILE=${AWS_PRIMARY_PROFILE}"
+    export AWS_PROFILE=${AWS_PRIMARY_PROFILE}
+
+    if [ -z $AWS_PROFILE ]; then
+    echo "AWS_PROFILE environment variable is not set."
+    exit 1
+    fi        
 
     echo "Deploying Cloud Formation stack: \"${PROJECT_NAME}-VPCPeering\" containing lambda function and use it to generate a cross account VPC Peer request..."
     aws cloudformation deploy \
         --no-fail-on-empty-changeset \
         --stack-name "${PROJECT_NAME}-VPCPeering"\
-        --template-file "${PRIMARY_ACCOUNT_DIR}/vpcpeer.yaml" \
+        --template-file "/Users/alegrm/Downloads/aws-app-mesh-examples/walkthroughs/howto-cross-account/primary-account/vpcpeer.yaml" \
         --capabilities CAPABILITY_IAM \
         --parameter-overrides "LocalVPC=${SHARED_VPC}" "PeerVPC=${SECONDARY_VPC}" "PeerVPCOwner=${AWS_SECONDARY_ACCOUNT_ID}" "PeerRoleName=${PeerRoleName}" 
 }
@@ -146,9 +145,8 @@ load_secondary_vpc() {
 
 deploy_stacks() {
     load_primary_vpc
-    load_secondary_vpc
-
     deploy_infra
+    load_secondary_vpc
     deploy_VPCPeeringAuthorizerRole
     deploy_VPCPeering
     deploy_mesh

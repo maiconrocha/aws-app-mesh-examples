@@ -218,7 +218,7 @@ Resources:
       - IpProtocol: tcp
         FromPort: 22
         ToPort: 22
-        CidrIp: 0.0.0.0/0
+        CidrIp: 10.0.0.0/16
 
   Bastion:
     Type: AWS::EC2::Instance

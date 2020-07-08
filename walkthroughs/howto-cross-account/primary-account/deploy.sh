@@ -17,7 +17,7 @@ deploy_image() {
     echo "Deploying Gateway image to ECR..."
     aws ecr describe-repositories --repository-name ${PROJECT_NAME}/gateway >/dev/null 2>&1 || aws ecr create-repository --repository-name ${PROJECT_NAME}/gateway
     docker build -t ${ECR_IMAGE_PREFIX}/gateway ${DIR}/gateway --build-arg BACKEND_SERVICE=backend.${PROJECT_NAME}.local
-    $(aws --profile ${AWS_PROFILE} ecr get-login --no-include-email)
+    #$(aws --profile ${AWS_PROFILE} ecr get-login --no-include-email)
     docker push ${ECR_IMAGE_PREFIX}/gateway
 }
 
@@ -89,7 +89,7 @@ deploy_stacks() {
     deploy_infra
     deploy_mesh
     deploy_app
-    enable_org_share
+ #   enable_org_share
  #   share_resources
 }
 
